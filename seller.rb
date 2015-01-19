@@ -1,19 +1,21 @@
 # This class is dealing with the data structure of the seller data
 
-require 'data_analyzer'
+require_relative 'data_analyzer'
 
 class Seller
 
-  attr_accessor :name
-  attr_reader :data_analyzer
+  attr_accessor :name, :item_counter, :deal_counter, :records
 
-  def initialize(records)
-    @data_analyzer = DataAnalyzer.new(records)
-    @name          = data_analyzer.seller_name
+  # expect to pass record of array
+  def initialize(seller_name, item_counter, deal_counter, records)
+    @records      = records
+    @name         = seller_name
+    @item_counter = item_counter
+    @deal_counter = deal_counter
   end
 
   def daily_amount(date)
-    @daily_amount ||= data_analyzer.daily_amount(date)
+    DataAnalyzerService.daily_amount(records, date)
   end
 
   def weekly_amount(start_date)
@@ -21,19 +23,19 @@ class Seller
   end
 
   def duration_amount(start_date, end_date)
-    data_analyzer.duration_amount(start_date, end_date)
+    DataAnalyzerService.duration_amount(records, start_date, end_date)
   end
 
   def average_price
-    @average_price ||= data_analyzer.average_price
+    @average_price ||= DataAnalyzerService.average_price(records)
   end
 
   def total_record
-    @total_record ||= data_analyzer.records.size
+    @total_record ||= DataAnalyzerService.records.size
   end
 
   # return the amount of product box
   def total_amount
-    @total_amount ||= data_analyzer.total_amount
+    @total_amount ||= DataAnalyzerService.total_amount(records)
   end
 end

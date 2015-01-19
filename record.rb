@@ -2,9 +2,9 @@
 
 class Record
 
-  attr_accessor :product_name, :unit_price, :amount, :date, :seller_name, :buyer_name
+  attr_accessor :product_name, :unit_price, :amount, :date, :seller_name, :buyer_name, :title
 
-  def initialize(data)
+  def initialize(data = {})
     recordify(data)
   end
 
