@@ -2,7 +2,9 @@
 
 class DataAnalyzerService
 
-  def self.average_price(records)
+
+  def self.average_price(records, option = {})
+    return 0 if records.length == 0
     money = 0
     records.each { |record| money += record.unit_price.to_i }
     length = records.length

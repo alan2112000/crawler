@@ -4,22 +4,25 @@ require 'watir-webdriver'
 require 'Date'
 require_relative 'record'
 require_relative 'seller'
+require 'headless'
 
 
 # This Class is used to crawler the data in taobo by keyword
 class Crawler
 
+  WAITTING_TIME = 3
   attr_reader :url, :sellers_data
   attr_reader :item_url
   attr_reader :key_word, :browser, :end_date, :user_input_start_date, :seller_name, :records
   attr_accessor :records
 
   def initialize(url, option = {})
+    @headless = Headless.new
+    @headless.start
     @browser  = Watir::Browser.new
     @url      = url
     @item_url = 'http://item.taobao.com/item.htm?spm=a230r.1.14.1.PO9xTu&id=15512619980&ns=1&abbucket=15#detail'
     @sellers_data = []
-
     unless option.empty?
       @end_date              = Date.parse(option.fetch(:end_date)) if option.fetch(:end_date, nil)
       @user_input_start_date = Date.parse(option.fetch(:start_date)) if option.fetch(:start_date, nil)
@@ -29,13 +32,14 @@ class Crawler
 
   def start_parse
     puts 'Parsing .....'
-    browser.goto url
-    parse_search_result
-    go_to_each_seller
+      browser.goto url
+      parse_search_result
+      go_to_each_seller
   end
 
   def close
     browser.close
+    headless.destroy
   end
 
   private
@@ -49,7 +53,7 @@ class Crawler
 
   # get price transaction amount
   def parse_seller
-    sleep(5)
+    sleep(WAITTING_TIME)
     doc          = Nokogiri::HTML(browser.html)
     @seller_name = doc.css('div.tb-shop-name').css('h3').text
     @records = []
@@ -75,7 +79,7 @@ class Crawler
       puts "===================== page #{page} ===================="
       browser.a(:class => 'J_TAjaxTrigger page-next').click
       doc = Nokogiri::HTML(browser.html)
-      sleep(3)
+      sleep(WAITTING_TIME)
 
       break_outside = false
       records       = doc.css('tr.tb-change')
@@ -110,11 +114,11 @@ class Crawler
 
   # set the links of the seller
   def parse_search_result
-    sleep(5)
+    sleep(WAITTING_TIME)
     doc           = Nokogiri::HTML(browser.html)
     sellers       = doc.css('li.item')
     @seller_links = sellers.each_with_object([]) { |seller, links_array| links_array << seller.css('a')[0]['href'] }
-    @seller_links = @seller_links[0..1]
+    @seller_links = @seller_links[0..9]
   end
 
   def invalid_date?(bought_date)
@@ -123,5 +127,9 @@ class Crawler
 
   def seller_links
     @seller_links
+  end
+
+  def headless
+    @headless
   end
 end

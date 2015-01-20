@@ -4,7 +4,7 @@ require_relative 'data_analyzer'
 
 class Seller
 
-  attr_accessor :name, :item_counter, :deal_counter, :records
+  attr_accessor :name, :item_counter, :deal_people_counter, :deal_counter, :records
 
   # expect to pass record of array
   def initialize(seller_name, item_counter, deal_counter, records)
@@ -12,6 +12,7 @@ class Seller
     @name         = seller_name
     @item_counter = item_counter
     @deal_counter = deal_counter
+    @deal_people_counter = deal_people_counter || 0
   end
 
   def daily_amount(date)
@@ -38,4 +39,5 @@ class Seller
   def total_amount
     @total_amount ||= DataAnalyzerService.total_amount(records)
   end
+
 end

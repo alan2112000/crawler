@@ -20,5 +20,6 @@ class Record
     @amount       = data.fetch(:amount, nil)
     @seller_name  = data.fetch(:seller_name, nil)
     @buyer_name   = data.fetch(:buyer_name, nil)
+    @date         = data.fetch(:date, nil)
   end
 end
