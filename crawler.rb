@@ -13,7 +13,7 @@ class Crawler
 
   FIFTEEN_SIZE_PRODUCT = 15
   TEN_SIZE_PRODUCT     = 10
-  WAITTING_TIME        = 2
+  WAITTING_TIME        = 3
   attr_reader :url, :sellers_data
   attr_reader :key_word, :browser, :end_date, :user_input_start_date, :seller_name, :records, :number_of_received_people
   attr_accessor :records
@@ -34,8 +34,8 @@ class Crawler
     puts 'Parsing .....'
     browser.goto url
     sleep(WAITTING_TIME)
-    # browser.a(:class => 'J_btn_toCN').click
-    # type_key_word(key_word)
+    browser.a(:class => 'J_btn_toCN').click
+    type_key_word(key_word)
     parse_search_result
     go_to_each_seller
   end
@@ -49,12 +49,8 @@ class Crawler
     browser.text_field(:id, 'q').set(key_word)
     browser.button(:class, 'btn-search').click
 
-    sleep(WAITTING_TIME)
-    doc = Nokogiri::HTML(browser.html)
-    link = doc.css('li.sort')[2].css('a')['href']
-    puts link
-    browser.goto link
   end
+
   private
 
   def go_to_each_seller
@@ -77,7 +73,7 @@ class Crawler
     deal_counter         = TaoBaoParser.deal_counter(browser.html)
     puts "Seller Name #{seller_name}, 成功賣出 : #{success_sold_counter}, 賣出件數: #{deal_counter}, Product Size #{size}"
 
-    browser.a(:class => 'J_item_tab J_item_record tab-btn').click
+    browser.li(:class => 'tb-last').a(:class => 'tb-tab-anchor').click
     parse_records(size)
 
     @sellers_data << Seller.new(seller_name, success_sold_counter, deal_counter, records)
@@ -88,7 +84,6 @@ class Crawler
 
     while browser.a(:class => 'J_TAjaxTrigger page-next').present?
       puts "===================== page #{page} ===================="
-      browser.a(:class => 'J_TAjaxTrigger page-next').click
       sleep(WAITTING_TIME)
 
       break_outside = false
@@ -115,12 +110,14 @@ class Crawler
 
       break if break_outside
       page += 1
+      browser.a(:class => 'J_TAjaxTrigger page-next').click
     end
   end
 
   # set the links of the seller
   def parse_search_result
     sleep(WAITTING_TIME)
+
     sellers             = TaoBaoParser.sellers_link(browser.html)
     @seller_links       = sellers.each_with_object([]) { |seller, links_array| links_array << seller.css('a')[0]['href'] }
     @number_of_received_people = sellers.each_with_object([]) { |seller, deals_people_array| deals_people_array << TaoBaoParser.transaction_people_counter(seller) }

@@ -5,7 +5,6 @@ require_relative 'csv_writer'
 
 MAIN_WEBSITE_URL = 'http://www.taobao.com/'
 KEY_WORD = '微熱山丘'
-url = 'http://s.taobao.com/search?initiative_id=tbindexz_20150125&tab=all&q=%CE%A2%9F%E1%C9%BD%C7%F0&suggest=history_1&source=suggest&sort=sale-desc'
 
 crawler = Crawler.new(MAIN_WEBSITE_URL, KEY_WORD, start_date: '2015-01-24', end_date: '2015-01-17')
 crawler.start_parse
