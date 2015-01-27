@@ -14,3 +14,4 @@ sellers_data = crawler.sellers_data
 crawler.close
 
 CsvWriter.call_daily_report(sellers_data, 'daily.csv', '2015-01-24' )
+CsvWriter.call_detail_daily_report(sellers_data, 'detail_report.csv', '2015-01-24')

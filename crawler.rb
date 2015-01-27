@@ -18,11 +18,11 @@ class Crawler
   attr_reader :key_word, :browser, :end_date, :user_input_start_date, :seller_name, :records, :number_of_received_people
   attr_accessor :records
 
-  def initialize(url,key_word, option = {})
+  def initialize(url, key_word, option = {})
     @browser      = Watir::Browser.new
     @url          = url
     @sellers_data = []
-    @key_word = key_word
+    @key_word     = key_word
     unless option.empty?
       @end_date              = Date.parse(option.fetch(:end_date)) if option.fetch(:end_date, nil)
       @user_input_start_date = Date.parse(option.fetch(:start_date)) if option.fetch(:start_date, nil)
@@ -71,18 +71,19 @@ class Crawler
     size                 = get_product_size(product_title)
     success_sold_counter = TaoBaoParser.item_counter(browser.html)
     deal_counter         = TaoBaoParser.deal_counter(browser.html)
-    puts "Seller Name #{seller_name}, 成功賣出 : #{success_sold_counter}, 賣出件數: #{deal_counter}, Product Size #{size}"
-
-    browser.li(:class => 'tb-last').a(:class => 'tb-tab-anchor').click
+    puts "Seller Name #{seller_name}, 成功賣出 : #{success_sold_counter}, 賣出件數: #{deal_counter}, Product Size #{size}, 產品名 :#{product_title}"
     parse_records(size)
 
-    @sellers_data << Seller.new(seller_name, success_sold_counter, deal_counter, records)
+    @sellers_data << Seller.new(seller_name, success_sold_counter, deal_counter, records, product_title: product_title)
   end
 
   def parse_records(product_size)
     page = 1
 
-    while browser.a(:class => 'J_TAjaxTrigger page-next').present?
+    browser.li(:class => 'tb-last').a(:class => 'tb-tab-anchor').click
+    sleep(WAITTING_TIME)
+    # while browser.a(:class => 'J_TAjaxTrigger page-next').present?
+    while true
       puts "===================== page #{page} ===================="
       sleep(WAITTING_TIME)
 
@@ -94,17 +95,19 @@ class Crawler
         title       = TaoBaoParser.title(record)
         bought_date = TaoBaoParser.bought_date(record)
 
-        if end_date && (bought_date < end_date)
-          break_outside = true
-          break
-        end
+        if bought_date
+          if end_date && (bought_date < end_date)
+            break_outside = true
+            break
+          end
 
-        if invalid_date?(bought_date)
-          # user dont wanna this record
-        else
-          puts "Price : #{price}, amount: #{amount} title: #{title}, start date: #{bought_date}, Size: #{product_size}"
-          @records << Record.new(unit_price: price, amount: amount, buyer_name: @seller_name, title: title, date: bought_date, size: product_size)
-          @records = @records.select { |record| end_date < record.date }
+          if invalid_date?(bought_date)
+            puts 'error occur or already touch the end date'
+          else
+            puts "Price : #{price}, amount: #{amount} title: #{title}, start date: #{bought_date}, Size: #{product_size}"
+            @records << Record.new(unit_price: price, amount: amount, buyer_name: @seller_name, title: title, date: bought_date, size: product_size)
+            @records.select! { |record| end_date < record.date }
+          end
         end
       end
 
@@ -117,11 +120,12 @@ class Crawler
   # set the links of the seller
   def parse_search_result
     sleep(WAITTING_TIME)
+    sortby_amount_of_sold
 
-    sellers             = TaoBaoParser.sellers_link(browser.html)
-    @seller_links       = sellers.each_with_object([]) { |seller, links_array| links_array << seller.css('a')[0]['href'] }
+    sellers                    = TaoBaoParser.sellers_link(browser.html)
+    @seller_links              = sellers.each_with_object([]) { |seller, links_array| links_array << seller.css('a')[0]['href'] }
     @number_of_received_people = sellers.each_with_object([]) { |seller, deals_people_array| deals_people_array << TaoBaoParser.transaction_people_counter(seller) }
-    @seller_links       = @seller_links[0..15]
+    @seller_links              = @seller_links[0..15]
 
   end
 
@@ -135,6 +139,11 @@ class Crawler
 
   def headless
     @headless
+  end
+
+  def sortby_amount_of_sold
+    browser.lis(class: 'sort')[2].a.click
+    sleep(WAITTING_TIME)
   end
 
   def get_product_size(product_name)

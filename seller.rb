@@ -4,22 +4,24 @@ require_relative 'data_analyzer'
 
 class Seller
 
-  attr_accessor :name, :success_sold_counter, :number_of_received_people, :deal_counter, :records
+  attr_accessor :name, :success_sold_counter, :number_of_received_people, :deal_counter, :records, :product_title
 
   # expect to pass record of array
-  def initialize(seller_name, success_sold_counter, deal_counter, records, number_of_recieved_people = 0)
+  def initialize(seller_name, success_sold_counter, deal_counter, records, number_of_recieved_people = 0, option ={})
     @records                   = records
     @name                      = seller_name
     # 成功售出件數
     @success_sold_counter      = success_sold_counter || 0
     # 成交件數
     @deal_counter              = deal_counter
-    # 收獲人數
+    # 收貨人數
     @number_of_received_people = number_of_received_people
+    # 產品名
+    @product_title = option.fetch(:product_title, nil)
   end
 
   def records_by_date(date)
-    DataAnalyzerService.filter_by_date(@records, date)
+    DataAnalyzerService.filter_by_date(records, date)
   end
 
   def daily_amount(date)

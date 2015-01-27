@@ -19,14 +19,14 @@ class TaoBaoParser
   def self.item_counter(html)
     doc  = Nokogiri::HTML(html)
     item = doc.css('div.tb-sell-counter')
-    item.css('strong#J_SellCounter').text
+    item.css('strong#J_SellCounter').text.to_i
   end
 
   # 30天交易次數
   def self.deal_counter(html)
     doc         = Nokogiri::HTML(html)
     transaction = doc.css('li.tb-last')
-    transaction.css('em.J_TDealCount').text
+    transaction.css('em.J_TDealCount').text.to_i
   end
 
   # 商品名
@@ -35,11 +35,11 @@ class TaoBaoParser
     doc.css('h3.tb-main-title').text
   end
   def self.price(record)
-    record.css('em.tb-rmb-num').text
+    record.css('em.tb-rmb-num').text.to_i
   end
 
   def self.amount(record)
-    record.css('td.tb-amount').text
+    record.css('td.tb-amount').text.to_i
   end
 
   # 特別促銷
@@ -53,7 +53,11 @@ class TaoBaoParser
 
   def self.bought_date(record)
     bought_date = record.css('td.tb-start').text
-    Date.parse(bought_date)
+    if bought_date.empty?
+      false
+    else
+      Date.parse(bought_date)
+    end
   end
 
   def self.records(html)
@@ -62,7 +66,7 @@ class TaoBaoParser
   end
 
   def self.transaction_people_counter(doc)
-    doc.css('div.deal-cnt').text
+    doc.css('div.deal-cnt').text.to_i
   end
 
 end
