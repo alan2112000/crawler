@@ -3,7 +3,7 @@ require 'csv'
 
 WEEKLY_REPORT_COLUMN_NAME = %w[Rank Seller Average-Price Received_People Item-Sold-in-30days, Transaction_Number]
 DAILY_REPORT_COLUMN_NAME  = %w[日期 數量 價格 買家 產品名 容量]
-WEEKLY_REPORT_SELLER_INFO = %W[賣家 平均價格 收貨人數 成交件數 成功賣出件數 總數 產品名 容量]
+WEEKLY_REPORT_SELLER_INFO = %W[賣家 平均價格 收貨人數 成交件數 成功賣出件數 總數 產品名 連結 容量]
 DAILY_TOTAL_REPORT_COLUMN = %w[日期 數量 價格]
 
 # Handling the name of the column and the format of the csv output
@@ -69,7 +69,7 @@ class CsvWriter
   end
 
   def self.seller_info(seller)
-    [seller.name, seller.average_price, seller.number_of_received_people, seller.deal_counter, seller.success_sold_counter, seller.total_amount, seller.product_title, seller.product_size]
+    [seller.name, seller.average_price, seller.number_of_received_people, seller.deal_counter, seller.success_sold_counter, seller.total_amount, seller.product_title, seller.link, seller.product_size]
   end
 
   def self.daily_format2(date, amount, average_price)

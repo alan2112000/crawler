@@ -56,13 +56,13 @@ class Crawler
   def go_to_each_seller
     seller_links.each_with_index do |link, index|
       browser.goto link
-      parse_seller
+      parse_seller(link)
       sellers_data.last.number_of_received_people = number_of_received_people[index]
     end
   end
 
   # get price transaction amount
-  def parse_seller
+  def parse_seller(link)
     sleep(WAITTING_TIME)
     @seller_name = TaoBaoParser.seller_name(browser.html)
     @records     = []
@@ -74,7 +74,7 @@ class Crawler
     puts "Seller Name #{seller_name}, 成功賣出 : #{success_sold_counter}, 賣出件數: #{deal_counter}, Product Size #{size}, 產品名 :#{product_title}"
     parse_records(size)
 
-    @sellers_data << Seller.new(seller_name, success_sold_counter, deal_counter, records, product_title: product_title)
+    @sellers_data << Seller.new(seller_name, success_sold_counter, deal_counter, records, product_title: product_title, link: link)
   end
 
   def parse_records(product_size)
@@ -125,7 +125,7 @@ class Crawler
     sellers                    = TaoBaoParser.sellers_link(browser.html)
     @seller_links              = sellers.each_with_object([]) { |seller, links_array| links_array << seller.css('a')[0]['href'] }
     @number_of_received_people = sellers.each_with_object([]) { |seller, deals_people_array| deals_people_array << TaoBaoParser.transaction_people_counter(seller) }
-    @seller_links              = @seller_links[0..15]
+    @seller_links              = @seller_links[0..1]
 
   end
 
