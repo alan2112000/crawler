@@ -13,7 +13,7 @@ class Crawler
 
   FIFTEEN_SIZE_PRODUCT = 15
   TEN_SIZE_PRODUCT     = 10
-  WAITTING_TIME        = 3
+  WAITTING_TIME        = 5
   attr_reader :url, :sellers_data
   attr_reader :key_word, :browser, :end_date, :user_input_start_date, :seller_name, :records, :number_of_received_people
   attr_accessor :records
@@ -35,6 +35,8 @@ class Crawler
     browser.goto url
     sleep(WAITTING_TIME)
     browser.a(:class => 'J_btn_toCN').click
+    login
+    sleep(WAITTING_TIME)
     type_key_word(key_word)
     parse_search_result
     go_to_each_seller
@@ -52,6 +54,14 @@ class Crawler
   end
 
   private
+
+  def login
+    browser.a(class: 'h').click
+    sleep(WAITTING_TIME)
+    browser.text_field(:id, 'TPL_username_1').set('shuemeiwang')
+    browser.text_field(:id, 'TPL_password_1').set('monkey21')
+    browser.button(class: 'J_Submit').click
+  end
 
   def go_to_each_seller
     seller_links.each_with_index do |link, index|
@@ -96,17 +106,17 @@ class Crawler
         bought_date = TaoBaoParser.bought_date(record)
 
         if bought_date
-          if end_date && (bought_date < end_date)
+          if end_date && (bought_date.to_date < end_date)
             break_outside = true
             break
           end
 
-          if invalid_date?(bought_date)
+          if invalid_date?(bought_date.to_date)
             puts 'error occur or already touch the end date'
           else
             puts "Price : #{price}, amount: #{amount} title: #{title}, start date: #{bought_date}, Size: #{product_size}"
             @records << Record.new(unit_price: price, amount: amount, buyer_name: @seller_name, title: title, date: bought_date, size: product_size)
-            @records.select! { |record| end_date < record.date }
+            @records.select! { |record| end_date < record.date.to_date }
           end
         end
       end
@@ -125,12 +135,12 @@ class Crawler
     sellers                    = TaoBaoParser.sellers_link(browser.html)
     @seller_links              = sellers.each_with_object([]) { |seller, links_array| links_array << seller.css('a')[0]['href'] }
     @number_of_received_people = sellers.each_with_object([]) { |seller, deals_people_array| deals_people_array << TaoBaoParser.transaction_people_counter(seller) }
-    @seller_links              = @seller_links[0..1]
+    @seller_links              = @seller_links[0..15]
 
   end
 
   def invalid_date?(bought_date)
-    user_input_start_date && (bought_date > user_input_start_date)
+    user_input_start_date && ((bought_date - user_input_start_date) >= 1)
   end
 
   def seller_links

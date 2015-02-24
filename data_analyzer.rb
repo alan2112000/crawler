@@ -36,7 +36,7 @@ class DataAnalyzerService
   end
 
   def self.filter_by_date(records, date)
-    records.select { |record| record.date == date }
+    records.select { |record| record.date.to_date.to_s == date.to_s }
   end
 end
 

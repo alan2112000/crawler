@@ -5,6 +5,7 @@ WEEKLY_REPORT_COLUMN_NAME = %w[Rank Seller Average-Price Received_People Item-So
 DAILY_REPORT_COLUMN_NAME  = %w[日期 數量 價格 買家 產品名 容量]
 WEEKLY_REPORT_SELLER_INFO = %W[賣家 平均價格 收貨人數 成交件數 成功賣出件數 總數 產品名 連結 容量]
 DAILY_TOTAL_REPORT_COLUMN = %w[日期 數量 價格]
+BIG_AMOUNT = 10
 
 # Handling the name of the column and the format of the csv output
 class CsvWriter
@@ -25,8 +26,8 @@ class CsvWriter
   # Output the date of records in every seller
   def self.call_daily_report(sellers_data, file_name, date)
 
-    sellers_data.sort_by! { |seller| seller.success_sold_counter.to_i }
     date = Date.parse(date)
+    sellers_data.sort_by! { |seller| seller.success_sold_counter.to_i }
     CSV.open("#{date}_#{file_name}", 'w') do |csv|
       sellers_data.each do |seller|
         csv << WEEKLY_REPORT_SELLER_INFO
@@ -54,6 +55,23 @@ class CsvWriter
         csv << DAILY_REPORT_COLUMN_NAME
         records.each do |record|
           csv << daily_format(record)
+        end
+      end
+    end
+  end
+
+  def self.big_amount_format(sellers_data, file_name, date)
+    sellers_data.sort_by! { |seller| seller.success_sold_counter }
+    date = Date.parse(date)
+    CSV.open("#{date}_#{file_name}", 'w') do |csv|
+      sellers_data.each do |seller|
+        csv << WEEKLY_REPORT_SELLER_INFO
+        puts seller.name
+        csv << seller_info(seller)
+        records = seller.records.sort_by { |record| record.date }
+        csv << DAILY_REPORT_COLUMN_NAME
+        records.each do |record|
+          csv << daily_format(record) if record.amount >= 10
         end
       end
     end

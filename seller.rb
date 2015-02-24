@@ -31,7 +31,7 @@ class Seller
   end
 
   def weekly_amount(start_date)
-    duration_amount(start_date, start_date+6)
+    duration_amount(start_date, start_date + 6)
   end
 
   def duration_amount(start_date, end_date)

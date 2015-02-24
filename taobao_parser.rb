@@ -56,7 +56,7 @@ class TaoBaoParser
     if bought_date.empty?
       false
     else
-      Date.parse(bought_date)
+      DateTime.parse(bought_date)
     end
   end
 
